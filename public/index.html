@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Nutrition App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px 0;
+      font-size: 16px;
+    }
+    #results {
+      margin-top: 20px;
+    }
+    .food-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+    .food-card h3 {
+      margin-top: 0;
+    }
+    .nutrient {
+      margin: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Nutrition App</h1>
+  <input type="text" id="foodInput" placeholder="Enter food item">
+  <button id="searchBtn">Search</button>
+
+  <div id="results"></div>
+
+  <script>
+    const searchBtn = document.getElementById('searchBtn');
+    const foodInput = document.getElementById('foodInput');
+    const resultsDiv = document.getElementById('results');
+
+    searchBtn.addEventListener('click', async () => {
+      const food = foodInput.value.trim();
+      if (!food) return alert('Please enter a food item');
+
+      resultsDiv.innerHTML = '<p>Loading...</p>';
+
+      try {
+        const response = await fetch(`/nutrition?food=${food}`);
+        const data = await response.json();
+
+        if (data.error) {
+          resultsDiv.innerHTML = `<p>${data.error}</p>`;
+        } else if (data.length === 0) {
+          resultsDiv.innerHTML = `<p>No results found for "${food}"</p>`;
+        } else {
+          resultsDiv.innerHTML = '';
+          data.forEach(item => {
+            const card = document.createElement('div');
+            card.classList.add('food-card');
+
+            card.innerHTML = `
+              <h3>${item.name}</h3>
+              <p class="nutrient">Calories: ${item.calories}</p>
+              <p class="nutrient">Carbohydrates: ${item.carbohydrates_total_g} g</p>
+              <p class="nutrient">Protein: ${item.protein_g} g</p>
+              <p class="nutrient">Fat: ${item.fat_total_g} g</p>
+              <p class="nutrient">Serving Size: ${item.serving_size_g} g</p>
+            `;
+
+            resultsDiv.appendChild(card);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        resultsDiv.innerHTML = `<p>Something went wrong. Try again later.</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
